@@ -1,5 +1,5 @@
 USE MASTER;
-
+DROP DATABASE Library
 CREATE DATABASE Library;
 
 USE [Library];
@@ -11,14 +11,14 @@ CREATE TABLE LIBRARY_BRANCH (
 	);
 
 CREATE TABLE PUBLISHER (
-	PublisherName INT PRIMARY KEY NOT NULL IDENTITY (1,1),
+	PublisherName VARCHAR(50) PRIMARY KEY NOT NULL,
 		Address VARCHAR(50) NOT NULL,
 		Phone VARCHAR(50)  NOT NULL
 	);
 
 CREATE TABLE BOOKS (
 	BookID INT PRIMARY KEY NOT NULL IDENTITY (1,1),
-		PublisherName INT,
+		PublisherName VARCHAR(50),
 		FOREIGN KEY (PublisherName) REFERENCES PUBLISHER(PublisherName), --links to PUBLISHER
 		Title VARCHAR(50) NOT NULL
 	);
@@ -60,7 +60,7 @@ CREATE TABLE BOOK_AUTHORS (
 	);
 
 	GO
-SET IDENTITY_INSERT PUBLISHER ON
+
 INSERT INTO PUBLISHER (PublisherName, Address, Phone)
 VALUES  ('Random House', '1745 Broadway, New York,NY', '2127829000'),
 		('Penguin', '375 Hudson St, New York', '2127821111'),
@@ -282,27 +282,29 @@ AS
  FROM BOOK_LOANS
  INNER JOIN BOOKS ON BOOKS.BookID =BOOK_LOANS.BookID
  INNER JOIN BORROWER ON BORROWER.CardNo = BOOK_LOANS.CardNo
- INNER JOIN LIBRARY_BRANCH ON LIBRARY_BRANCH.BranchID = BOOK_LOANS.BookID
+ INNER JOIN LIBRARY_BRANCH ON LIBRARY_BRANCH.BranchID = BOOK_LOANS.BranchID
  WHERE DateDue = @DueDate AND BranchName = @BranchName
  GO
 
- EXEC SharpstownDueDate @BranchName = 'Sharpstown', @DueDate = '7/17/19'  -----Only returning 4?
+ EXEC SharpstownDueDate @BranchName = 'Sharpstown', @DueDate = '7/17/19'  
 
 -----------------------------------------------|
 
 --------------Procedure (  For each library branch, retrieve the branch name and the total number of books loaned out from that branch.
 
-
 GO
-CREATE PROCEDURE BranchLoans @BranchName nvarchar(30)
+CREATE PROCEDURE LoanTotalByBranch
 AS
-SELECT COUNT(DateOut)
+SELECT COUNT(DateOut), BranchName
 FROM BOOK_LOANS
 INNER JOIN LIBRARY_BRANCH ON BOOK_LOANS.BranchID = LIBRARY_BRANCH.BranchID
-WHERE BranchName = @BranchName
+WHERE DateOut = '7/1/19'
+GROUP BY BranchName
 GO
 
-EXEC BranchLoans @BranchName = 'Central'
+
+
+					
 
 --------------------------------------------------|
 
@@ -340,4 +342,5 @@ GO
  EXEC StephenKing @Author = 'Stephen King', @BranchName = 'Central'
  
  ------------------------------------------------------------------------|
+
 
